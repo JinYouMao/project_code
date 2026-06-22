@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>留言详情 - 在线留言板</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .navbar-glass {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.92), rgba(139, 92, 246, 0.92));
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 4px 30px rgba(99, 102, 241, 0.25);
+        }
+        .navbar-glass .nav-link {
+            color: rgba(255, 255, 255, 0.75);
+            transition: all 0.3s ease;
+            position: relative;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+        }
+        .navbar-glass .nav-link:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.15);
+        }
+        .navbar-glass .nav-link.active {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.2);
+            font-weight: 600;
+        }
+        .navbar-glass .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 3px;
+            background: #fff;
+            border-radius: 2px;
+        }
+        .logo-text {
+            color: #fff;
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .page-header h2 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin: 0;
+        }
+        .page-header .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.55rem 1.25rem;
+            border-radius: 10px;
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .page-header .btn-back:hover {
+            background: #e2e8f0;
+            transform: translateY(-1px);
+        }
+        .detail-card {
+            background: #fff;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 20px rgba(0,0,0,0.04);
+            border: 1px solid #f1f5f9;
+        }
+        .detail-header {
+            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+        .detail-tags {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .detail-tags .tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.3rem 0.75rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 0.2px;
+        }
+        .detail-tags .status-replied {
+            background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+            color: #166534;
+        }
+        .detail-tags .status-pending {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            color: #92400e;
+        }
+        .detail-tags .tag-info {
+            background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+            color: #1e40af;
+        }
+        .detail-tags .tag-success {
+            background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+            color: #166534;
+        }
+        .detail-tags .tag-warning {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            color: #92400e;
+        }
+        .detail-tags .tag-danger {
+            background: linear-gradient(135deg, #fee2e2, #fecaca);
+            color: #991b1b;
+        }
+        .detail-tags .tag-secondary {
+            background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+            color: #475569;
+        }
+        .detail-meta {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            color: #94a3b8;
+            font-size: 0.85rem;
+        }
+        .detail-body {
+            padding: 2rem;
+        }
+        .message-user {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.25rem;
+        }
+        .message-user .user-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            font-size: 1.1rem;
+        }
+        .message-user .user-name {
+            font-weight: 600;
+            color: #1e293b;
+            font-size: 1rem;
+        }
+        .message-user .user-contact {
+            color: #94a3b8;
+            font-size: 0.85rem;
+            padding: 0.2rem 0.6rem;
+            background: #f1f5f9;
+            border-radius: 6px;
+        }
+        .message-content {
+            color: #334155;
+            line-height: 1.8;
+            font-size: 0.95rem;
+            padding: 1.25rem;
+            background: #f8fafc;
+            border-radius: 12px;
+            border: 1px solid #f1f5f9;
+        }
+        .reply-section {
+            margin: 0;
+            border-top: 1px solid #f1f5f9;
+        }
+        .reply-section h4 {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin: 0;
+            padding: 1.5rem 2rem 0 2rem;
+        }
+        .reply-content {
+            margin: 1rem 2rem 1.5rem 2rem;
+            padding: 1.25rem;
+            background: linear-gradient(135deg, #f0fdf4, #ecfdf5);
+            border-radius: 12px;
+            border: 1px solid #bbf7d0;
+            position: relative;
+        }
+        .reply-content::before {
+            content: '';
+            position: absolute;
+            top: -6px;
+            left: 24px;
+            width: 12px;
+            height: 12px;
+            background: #f0fdf4;
+            border-left: 1px solid #bbf7d0;
+            border-top: 1px solid #bbf7d0;
+            transform: rotate(45deg);
+        }
+        .reply-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 0.75rem;
+            font-size: 0.85rem;
+        }
+        .reply-info .admin-name {
+            font-weight: 600;
+            color: #166534;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+        .reply-info .reply-time {
+            color: #94a3b8;
+        }
+        .reply-text {
+            color: #334155;
+            line-height: 1.8;
+            font-size: 0.95rem;
+        }
+        .reply-section.no-reply {
+            padding: 1.5rem 2rem;
+        }
+        .no-reply-text {
+            color: #94a3b8;
+            font-size: 0.9rem;
+            margin: 0.75rem 0 0 0;
+            padding: 1rem;
+            background: #f8fafc;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px dashed #e2e8f0;
+        }
+        .loading-modern {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #94a3b8;
+        }
+        .loading-modern .spinner {
+            display: inline-block;
+            width: 36px;
+            height: 36px;
+            border: 3px solid #e2e8f0;
+            border-top-color: #6366f1;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 1rem;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .modal-overlay {
+            backdrop-filter: blur(4px);
+        }
+        .modal-card {
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            border: none;
+            overflow: hidden;
+        }
+        .modal-card .modal-header {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: #fff;
+            padding: 1.25rem 1.5rem;
+        }
+        .modal-card .modal-header h3 {
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        .modal-card .modal-body {
+            padding: 1.5rem;
+        }
+        .modal-card .modal-body p {
+            color: #475569;
+            line-height: 1.6;
+        }
+        .modal-card .modal-footer {
+            padding: 1rem 1.5rem;
+            background: #f8fafc;
+            border-top: 1px solid #f1f5f9;
+        }
+        .modal-card .modal-footer .btn {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: #fff;
+            border: none;
+            padding: 0.55rem 1.5rem;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .modal-card .modal-footer .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+        .footer-modern {
+            text-align: center;
+            padding: 2rem 1rem;
+            color: #94a3b8;
+            font-size: 0.85rem;
+            border-top: 1px solid #f1f5f9;
+            margin-top: 3rem;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeInUp 0.5s ease-out forwards;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header navbar-glass">
+            <div class="header-content">
+                <h1 class="logo logo-text">📝 在线留言板</h1>
+                <nav class="nav">
+                    <a href="/user/index" class="nav-link">留言列表</a>
+                    <a href="/user/add" class="nav-link">提交留言</a>
+                    <a href="/admin/login" class="nav-link">管理后台</a>
+                </nav>
+            </div>
+        </header>
+
+        <main class="main-content animate-fade-in">
+            <div class="page-header">
+                <h2>留言详情</h2>
+                <button class="btn-back" onclick="location.href='/user/index'">
+                    ← 返回列表
+                </button>
+            </div>
+
+            <div id="messageDetail" class="message-detail">
+                <div class="loading loading-modern">
+                    <div class="spinner"></div>
+                    <div>加载中...</div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="footer footer-modern">
+            <p>&copy; 2024 在线留言板管理系统 - 计算机专业课程设计</p>
+        </footer>
+    </div>
+
+    <div id="alertModal" class="modal modal-overlay">
+        <div class="modal-content modal-card">
+            <div class="modal-header">
+                <h3 id="alertTitle">提示</h3>
+            </div>
+            <div class="modal-body">
+                <p id="alertMessage"></p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="closeAlert()">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/user.js"></script>
+    <script>
+        function getQueryParam(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        function loadMessageDetail() {
+            const id = getQueryParam('id');
+            if (!id) {
+                showAlert('错误', '缺少留言ID参数');
+                return;
+            }
+
+            fetch('/user/getMessage?id=' + id)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        displayMessage(data.data);
+                    } else {
+                        showAlert('错误', data.message);
+                    }
+                })
+                .catch(error => {
+                    showAlert('错误', '网络错误，请稍后重试');
+                });
+        }
+
+        function displayMessage(message) {
+            const detail = document.getElementById('messageDetail');
+
+            const statusClass = message.status === 1 ? 'status-replied' : 'status-pending';
+            const statusText = message.status === 1 ? '已回复' : '待回复';
+
+            const typeClass = getTypeClass(message.type);
+
+            const riskTag = message.isRisk === 1 ?
+                '<span class="tag tag-danger">⚠️ 违规内容</span>' : '';
+
+            let replyHtml = '';
+            if (message.reply) {
+                replyHtml = `
+                    <div class="reply-section">
+                        <h4>📌 管理员回复</h4>
+                        <div class="reply-content">
+                            <div class="reply-info">
+                                <span class="admin-name">👤 ${message.reply.adminName}</span>
+                                <span class="reply-time">🕐 ${message.reply.replyTime}</span>
+                            </div>
+                            <div class="reply-text">${escapeHtml(message.reply.replyContent).replace(/\n/g, '<br>')}</div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                replyHtml = `
+                    <div class="reply-section no-reply">
+                        <h4>📌 管理员回复</h4>
+                        <p class="no-reply-text">暂无管理员回复，我们会尽快处理您的留言。</p>
+                    </div>
+                `;
+            }
+
+            detail.innerHTML = `
+                <div class="detail-card">
+                    <div class="detail-header">
+                        <div class="detail-tags">
+                            <span class="tag ${statusClass}">${statusText}</span>
+                            <span class="tag ${typeClass}">${message.type}</span>
+                            ${riskTag}
+                        </div>
+                        <div class="detail-meta">
+                            <span>🆔 ID: ${message.id}</span>
+                            <span>🕐 ${message.createTime}</span>
+                        </div>
+                    </div>
+
+                    <div class="detail-body">
+                        <div class="message-user">
+                            <span class="user-icon">👤</span>
+                            <span class="user-name">${escapeHtml(message.username)}</span>
+                            ${message.contact ? '<span class="user-contact">📞 ' + escapeHtml(message.contact) + '</span>' : ''}
+                        </div>
+
+                        <div class="message-content">
+                            ${escapeHtml(message.content).replace(/\n/g, '<br>')}
+                        </div>
+                    </div>
+
+                    ${replyHtml}
+                </div>
+            `;
+        }
+
+        function getTypeClass(type) {
+            const classes = {
+                '咨询': 'tag-info',
+                '建议': 'tag-success',
+                '投诉': 'tag-warning',
+                '其他': 'tag-secondary',
+                '未知': 'tag-secondary',
+                '感谢': 'tag-success'
+            };
+            return classes[type] || 'tag-secondary';
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function showAlert(title, message) {
+            document.getElementById('alertTitle').textContent = title;
+            document.getElementById('alertMessage').textContent = message;
+            document.getElementById('alertModal').style.display = 'flex';
+        }
+
+        function closeAlert() {
+            document.getElementById('alertModal').style.display = 'none';
+        }
+
+        document.getElementById('alertModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeAlert();
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', loadMessageDetail);
+    </script>
+</body>
+</html>

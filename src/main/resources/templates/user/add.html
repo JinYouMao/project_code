@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>发表留言 - 在线留言板</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="logo">💬 在线留言板</div>
+            <nav class="nav">
+                <a href="/user/index">留言列表</a>
+                <a href="/user/add" class="active">发表留言</a>
+                <a href="/admin/login">管理后台</a>
+                <div class="user-info">
+                    <span class="user-name" th:text="${session.user?.nickname != null ? session.user.nickname : session.user.username}">用户</span>
+                    <a href="/user/logout" class="btn logout-btn">退出</a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <h1 class="page-title">发表留言</h1>
+
+            <div class="card" style="max-width: 800px;">
+                <form id="addForm" action="/user/add-direct" method="post">
+                    <div class="form-group">
+                        <label class="form-label">您的称呼</label>
+                        <input type="text" id="username" name="username" class="form-input" 
+                               th:value="${session.user?.nickname != null ? session.user.nickname : session.user.username}" 
+                               placeholder="选填，默认为匿名">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">联系方式</label>
+                        <input type="text" id="contact" name="contact" class="form-input" placeholder="选填，方便管理员联系您">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">留言内容 <span class="required">*</span></label>
+                        <textarea id="content" name="content" class="form-input form-textarea" placeholder="请输入您的留言..." required></textarea>
+                    </div>
+
+                    <div class="ai-assistant">
+                        <div style="font-weight: 600; margin-bottom: 12px; color: var(--text-primary);">🤖 AI 助手</div>
+                        <div class="ai-buttons">
+                            <button type="button" class="btn btn-default btn-sm" onclick="loadTemplate('suggestion')">💡 意见建议</button>
+                            <button type="button" class="btn btn-default btn-sm" onclick="loadTemplate('complaint')">😤 投诉反馈</button>
+                            <button type="button" class="btn btn-default btn-sm" onclick="loadTemplate('praise')">✨ 表扬感谢</button>
+                            <button type="button" class="btn btn-default btn-sm" onclick="loadTemplate('consultation')">❓ 问题咨询</button>
+                            <button type="button" class="btn btn-primary btn-sm" onclick="polishContent()">✨ 润色内容</button>
+                            <button type="button" class="btn btn-warning btn-sm" onclick="checkRisk()">⚠️ 违规检测</button>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 28px; display: flex; gap: 12px;">
+                        <button type="button" id="submitBtn" class="btn btn-primary btn-lg" style="min-width: 150px;" onclick="submitWithCheck()">提交留言</button>
+                        <a href="/user/index" class="btn btn-default btn-lg">取消</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>在线留言板管理系统 © 2026</p>
+        </div>
+    </footer>
+
+    <script th:inline="javascript">
+        async function submitWithCheck() {
+            const content = document.getElementById('content')?.value;
+
+            if (!content || content.trim() === '') {
+                alert('请输入留言内容');
+                return;
+            }
+
+            // 先自动检测违规内容
+            try {
+                const response = await fetch('/user/ai/checkRisk', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: 'content=' + encodeURIComponent(content)
+                });
+                const result = await response.json();
+                if (result.code === 200 && result.data) {
+                    let riskWord = result.riskWord || '违规内容';
+                    alert(`⚠️ 检测到违规词："${riskWord}"\n\n请修改后再提交！`);
+                    return; // 内容保留，不让提交
+                }
+            } catch (error) {
+                console.error(error);
+                // 如果检测失败，依然允许提交（不阻塞用户）
+            }
+
+            // 检测通过，手动提交表单
+            console.log('[提交] 检测通过，准备提交表单');
+            document.getElementById('addForm').submit();
+        }
+
+        async function polishContent() {
+            const content = document.getElementById('content')?.value;
+            if (!content || content.trim() === '') {
+                alert('请先输入内容');
+                return;
+            }
+
+            try {
+                const response = await fetch('/user/ai/polish', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: 'content=' + encodeURIComponent(content)
+                });
+                const result = await response.json();
+                if (result.code === 200) {
+                    document.getElementById('content').value = result.data;
+                    alert('润色完成');
+                } else {
+                    alert(result.message || '润色失败');
+                }
+            } catch (error) {
+                console.error(error);
+                alert('润色失败，请重试');
+            }
+        }
+
+        async function checkRisk() {
+            const content = document.getElementById('content')?.value;
+            if (!content || content.trim() === '') {
+                alert('请先输入内容');
+                return;
+            }
+
+            try {
+                const response = await fetch('/user/ai/checkRisk', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: 'content=' + encodeURIComponent(content)
+                });
+                const result = await response.json();
+                if (result.code === 200) {
+                    if (result.data) {
+                        // 如果有违规词，显示更具体的提示
+                        let riskWord = result.riskWord || '违规内容';
+                        alert(`⚠️ 检测到违规词："${riskWord}"\n\n请修改后再提交！`);
+                    } else {
+                        alert('✅ 内容正常，可以提交！');
+                    }
+                } else {
+                    alert(result.message || '检测失败');
+                }
+            } catch (error) {
+                console.error(error);
+                alert('检测失败，请重试');
+            }
+        }
+
+        async function loadTemplate(type) {
+            try {
+                const response = await fetch('/user/ai/template?type=' + encodeURIComponent(type), {
+                    method: 'GET'
+                });
+                const result = await response.json();
+                if (result.code === 200) {
+                    document.getElementById('content').value = result.data;
+                } else {
+                    alert(result.message || '获取模板失败');
+                }
+            } catch (error) {
+                console.error(error);
+                alert('获取模板失败，请重试');
+            }
+        }
+    </script>
+</body>
+</html>

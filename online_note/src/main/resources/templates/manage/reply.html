@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>回复管理 - 管理后台</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0f0a1a;
+        }
+
+        .admin-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .admin-sidebar {
+            width: 260px;
+            background: linear-gradient(180deg, #1e1b4b 0%, #312e81 100%);
+            color: white;
+            padding: 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            padding: 2rem 1.5rem 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .sidebar-header h2 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+            color: #e0e7ff;
+        }
+
+        .sidebar-header p {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 0.5rem 0;
+            flex: 1;
+        }
+
+        .menu-item {
+            padding: 0.85rem 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: rgba(255, 255, 255, 0.55);
+            font-size: 0.9rem;
+            font-weight: 500;
+            position: relative;
+            border-left: 3px solid transparent;
+        }
+
+        .menu-item:hover {
+            color: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .menu-item.active {
+            color: #e0e7ff;
+            background: rgba(99, 102, 241, 0.15);
+            border-left-color: #818cf8;
+        }
+
+        .menu-item-icon {
+            font-size: 1.1rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        .admin-main {
+            flex: 1;
+            padding: 2rem;
+            margin-left: 260px;
+            background: #0f0a1a;
+            min-height: 100vh;
+        }
+
+        .admin-header {
+            background: rgba(30, 27, 75, 0.5);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 1.25rem 1.75rem;
+            border-radius: 16px;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .admin-user {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .admin-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.3rem;
+        }
+
+        .admin-info h3 {
+            font-size: 1rem;
+            color: #e0e7ff;
+            font-weight: 600;
+        }
+
+        .admin-info p {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .logout-btn {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            padding: 0.55rem 1.25rem;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        .page-title {
+            margin-bottom: 1.5rem;
+            color: #e0e7ff;
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .reply-card {
+            background: rgba(30, 27, 75, 0.4);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 16px;
+            margin-bottom: 1.25rem;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .reply-card:hover {
+            border-color: rgba(99, 102, 241, 0.15);
+        }
+
+        .reply-card-header {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.2));
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            color: #e0e7ff;
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .reply-card-header strong {
+            font-weight: 600;
+        }
+
+        .reply-card-body {
+            padding: 1.5rem;
+        }
+
+        .original-message {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            border-left: 3px solid #818cf8;
+        }
+
+        .original-message h4 {
+            color: #a5b4fc;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .original-message p {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .reply-content {
+            background: rgba(16, 185, 129, 0.05);
+            border: 1px solid rgba(16, 185, 129, 0.1);
+            padding: 1rem;
+            border-radius: 12px;
+            border-left: 3px solid #6ee7b7;
+            line-height: 1.8;
+        }
+
+        .reply-content h4 {
+            color: #6ee7b7;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .reply-content p {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+            line-height: 1.7;
+        }
+
+        .reply-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.04);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .reply-meta {
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.85rem;
+        }
+
+        .reply-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-xs {
+            padding: 0.3rem 0.65rem;
+            font-size: 0.78rem;
+            border-radius: 6px;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 2px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-danger {
+            background: rgba(239, 68, 68, 0.15);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .btn-danger:hover {
+            background: rgba(239, 68, 68, 0.25);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .empty-state-text {
+            font-size: 1rem;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: rgba(30, 27, 75, 0.95);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 32px 64px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-header h3 {
+            color: #e0e7ff;
+            font-size: 1.15rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .modal-body p {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .modal textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            font-family: 'Inter', sans-serif;
+            resize: vertical;
+            color: #e0e7ff;
+            font-size: 0.95rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .modal textarea::placeholder {
+            color: rgba(255, 255, 255, 0.25);
+        }
+
+        .modal textarea:focus {
+            border-color: rgba(99, 102, 241, 0.4);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.08);
+        }
+
+        .modal-footer {
+            margin-top: 1.5rem;
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+        }
+
+        .modal-footer .btn {
+            padding: 0.6rem 1.5rem;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .modal-footer .btn-primary {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            border: none;
+            color: white;
+        }
+
+        .modal-footer .btn-primary:hover {
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .modal-footer .btn-secondary {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #c7d2fe;
+        }
+
+        .modal-footer .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .modal-footer .btn-danger {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+        }
+
+        .modal-footer .btn-danger:hover {
+            background: rgba(239, 68, 68, 0.25);
+        }
+
+        @media (max-width: 768px) {
+            .admin-layout {
+                flex-direction: column;
+            }
+
+            .admin-sidebar {
+                width: 100%;
+                position: relative;
+            }
+
+            .admin-main {
+                margin-left: 0;
+            }
+
+            .sidebar-menu {
+                display: flex;
+                overflow-x: auto;
+            }
+
+            .menu-item {
+                padding: 0.8rem 1rem;
+                white-space: nowrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-layout">
+        <aside class="admin-sidebar">
+            <div class="sidebar-header">
+                <h2>🔐 管理中心</h2>
+                <p>在线留言板系统</p>
+            </div>
+            <ul class="sidebar-menu">
+                <li class="menu-item" onclick="location.href='/manage/index'">
+                    <span class="menu-item-icon">📊</span>
+                    <span>后台首页</span>
+                </li>
+                <li class="menu-item" onclick="location.href='/manage/message'">
+                    <span class="menu-item-icon">💬</span>
+                    <span>留言管理</span>
+                </li>
+                <li class="menu-item active" onclick="location.href='/manage/reply'">
+                    <span class="menu-item-icon">📝</span>
+                    <span>回复管理</span>
+                </li>
+                <li class="menu-item" onclick="location.href='/manage/statistics'">
+                    <span class="menu-item-icon">🤖</span>
+                    <span>AI智能助手</span>
+                </li>
+                <li class="menu-item" onclick="location.href='/user/index'">
+                    <span class="menu-item-icon">🌐</span>
+                    <span>访问前台</span>
+                </li>
+            </ul>
+        </aside>
+
+        <main class="admin-main">
+            <div class="admin-header">
+                <div class="admin-user">
+                    <div class="admin-avatar">👤</div>
+                    <div class="admin-info">
+                        <h3 id="adminName">管理员</h3>
+                        <p>在线留言板管理系统</p>
+                    </div>
+                </div>
+                <button class="logout-btn" onclick="logout()">退出登录</button>
+            </div>
+
+            <h2 class="page-title">📝 回复管理</h2>
+            <div id="replyList">
+                <div class="empty-state">
+                    <div class="empty-state-icon">⏳</div>
+                    <div class="empty-state-text">加载中...</div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>编辑回复</h3>
+            </div>
+            <div class="modal-body">
+                <textarea id="editContent"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeEditModal()">取消</button>
+                <button class="btn btn-primary" onclick="submitEdit()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="confirmModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>⚠️ 确认删除</h3>
+            </div>
+            <div class="modal-body">
+                <p id="confirmMessage">确定要删除这条回复吗？</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeConfirmModal()">取消</button>
+                <button class="btn btn-danger" id="confirmBtn">确认删除</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="alertModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="alertTitle">提示</h3>
+            </div>
+            <div class="modal-body">
+                <p id="alertMessage"></p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="closeAlert()">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentEditId = null;
+        let allMessages = [];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            checkLogin();
+            loadAllReplies();
+        });
+
+        function checkLogin() {
+            fetch('/admin/checkLogin')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.data.loggedIn) {
+                        document.getElementById('adminName').textContent = data.data.username;
+                    } else {
+                        location.href = '/admin/login';
+                    }
+                })
+                .catch(error => {
+                    location.href = '/admin/login';
+                });
+        }
+
+        function logout() {
+            if (confirm('确定要退出登录吗？')) {
+                location.href = '/admin/logout';
+            }
+        }
+
+        function loadAllReplies() {
+            fetch('/manage/message/list?pageNum=1&pageSize=1000')
+                .then(r => r.json())
+                .then(msgData => {
+                    if (msgData.success) {
+                        var repliedMessages = msgData.data.filter(function(m) { return m.status === 1; });
+                        if (repliedMessages.length === 0) {
+                            document.getElementById('replyList').innerHTML = '<div class="empty-state"><div class="empty-state-icon">📭</div><div class="empty-state-text">暂无已回复的留言</div></div>';
+                            return;
+                        }
+                        var promises = repliedMessages.map(function(msg) {
+                            return fetch('/user/getMessage?id=' + msg.id)
+                                .then(r => r.json())
+                                .then(function(d) {
+                                    if (d.success) {
+                                        return { message: d.data, reply: d.data.reply || null };
+                                    }
+                                    return null;
+                                });
+                        });
+                        Promise.all(promises).then(function(results) {
+                            allMessages = results.filter(function(r) { return r !== null && r.reply !== null; });
+                            displayReplies();
+                        });
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('replyList').innerHTML = '<div class="empty-state"><p>加载失败</p></div>';
+                });
+        }
+
+        var replyDataMap = {};
+
+        function displayReplies() {
+            var container = document.getElementById('replyList');
+
+            if (allMessages.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📭</div><div class="empty-state-text">暂无已回复的留言</div></div>';
+                return;
+            }
+
+            replyDataMap = {};
+            var html = '';
+            allMessages.forEach(function(item) {
+                var msg = item.message;
+                var reply = item.reply;
+                replyDataMap[reply.id] = reply.replyContent;
+                html += '<div class="reply-card">' +
+                    '<div class="reply-card-header">' +
+                        '<div>' +
+                            '<strong>💬 留言ID：' + msg.id + '</strong>' +
+                            '<span style="margin-left: 1rem; opacity: 0.6;">👤 ' + escapeHtml(msg.username) + '</span>' +
+                        '</div>' +
+                        '<span style="opacity: 0.5;">🕐 ' + msg.createTime + '</span>' +
+                    '</div>' +
+                    '<div class="reply-card-body">' +
+                        '<div class="original-message">' +
+                            '<h4>📝 用户留言：</h4>' +
+                            '<p>' + escapeHtml(msg.content) + '</p>' +
+                        '</div>' +
+                        '<div class="reply-content">' +
+                            '<h4>💬 管理员回复：</h4>' +
+                            '<p>' + escapeHtml(reply.replyContent) + '</p>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="reply-footer">' +
+                        '<div class="reply-meta">' +
+                            '<span>👤 管理员：' + escapeHtml(reply.adminName) + '</span>' +
+                            '<span style="margin-left: 1rem;">🕐 ' + reply.replyTime + '</span>' +
+                        '</div>' +
+                        '<div class="reply-actions">' +
+                            '<button class="btn btn-primary btn-xs" onclick="openEditModal(' + reply.id + ')">编辑</button>' +
+                            '<button class="btn btn-danger btn-xs" onclick="deleteReply(' + reply.id + ')">删除</button>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>';
+            });
+
+            container.innerHTML = html;
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function openEditModal(id) {
+            currentEditId = id;
+            document.getElementById('editContent').value = replyDataMap[id] || '';
+            document.getElementById('editModal').style.display = 'flex';
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+            currentEditId = null;
+        }
+
+        function submitEdit() {
+            const content = document.getElementById('editContent').value.trim();
+            if (!content) {
+                showAlert('提示', '请输入回复内容');
+                return;
+            }
+
+            const formData = new URLSearchParams();
+            formData.append('id', currentEditId);
+            formData.append('content', content);
+
+            fetch('/manage/reply/update', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert('成功', '更新成功');
+                    closeEditModal();
+                    loadAllReplies();
+                } else {
+                    showAlert('失败', data.message);
+                }
+            })
+            .catch(error => {
+                showAlert('错误', '网络错误');
+            });
+        }
+
+        function deleteReply(id) {
+            document.getElementById('confirmMessage').textContent = '确定要删除这条回复吗？删除后该留言将变为未回复状态。';
+            document.getElementById('confirmBtn').onclick = function() {
+                performDelete(id);
+            };
+            document.getElementById('confirmModal').style.display = 'flex';
+        }
+
+        function performDelete(id) {
+            closeConfirmModal();
+
+            const formData = new URLSearchParams();
+            formData.append('id', id);
+
+            fetch('/manage/reply/delete', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert('成功', '删除成功');
+                    loadAllReplies();
+                } else {
+                    showAlert('失败', data.message);
+                }
+            })
+            .catch(error => {
+                showAlert('错误', '网络错误');
+            });
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('confirmModal').style.display = 'none';
+        }
+
+        function showAlert(title, message) {
+            document.getElementById('alertTitle').textContent = title;
+            document.getElementById('alertMessage').textContent = message;
+            document.getElementById('alertModal').style.display = 'flex';
+        }
+
+        function closeAlert() {
+            document.getElementById('alertModal').style.display = 'none';
+        }
+
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

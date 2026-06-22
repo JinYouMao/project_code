@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理后台 - 在线留言板</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0f0a1a;
+        }
+
+        .admin-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .admin-sidebar {
+            width: 260px;
+            background: linear-gradient(180deg, #1e1b4b 0%, #312e81 100%);
+            color: white;
+            padding: 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            padding: 2rem 1.5rem 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .sidebar-header h2 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+            color: #e0e7ff;
+        }
+
+        .sidebar-header p {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 0.5rem 0;
+            flex: 1;
+        }
+
+        .menu-item {
+            padding: 0.85rem 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: rgba(255, 255, 255, 0.55);
+            font-size: 0.9rem;
+            font-weight: 500;
+            position: relative;
+            border-left: 3px solid transparent;
+        }
+
+        .menu-item:hover {
+            color: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .menu-item.active {
+            color: #e0e7ff;
+            background: rgba(99, 102, 241, 0.15);
+            border-left-color: #818cf8;
+        }
+
+        .menu-item-icon {
+            font-size: 1.1rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        .admin-main {
+            flex: 1;
+            padding: 2rem;
+            margin-left: 260px;
+            background: #0f0a1a;
+            min-height: 100vh;
+        }
+
+        .admin-header {
+            background: rgba(30, 27, 75, 0.5);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 1.25rem 1.75rem;
+            border-radius: 16px;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .admin-user {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .admin-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.3rem;
+        }
+
+        .admin-info h3 {
+            font-size: 1rem;
+            color: #e0e7ff;
+            font-weight: 600;
+        }
+
+        .admin-info p {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .logout-btn {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            padding: 0.55rem 1.25rem;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        .welcome-card {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.2));
+            border: 1px solid rgba(99, 102, 241, 0.15);
+            backdrop-filter: blur(16px);
+            color: #e0e7ff;
+            padding: 2rem;
+            border-radius: 16px;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .welcome-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -30%;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.15), transparent 70%);
+            pointer-events: none;
+        }
+
+        .welcome-card h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            position: relative;
+        }
+
+        .welcome-card p {
+            opacity: 0.7;
+            font-size: 0.95rem;
+            position: relative;
+        }
+
+        .quick-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(30, 27, 75, 0.4);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 1.5rem;
+            border-radius: 16px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+        }
+
+        .stat-card:nth-child(1)::before { background: linear-gradient(90deg, #6366f1, #818cf8); }
+        .stat-card:nth-child(2)::before { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+        .stat-card:nth-child(3)::before { background: linear-gradient(90deg, #10b981, #34d399); }
+        .stat-card:nth-child(4)::before { background: linear-gradient(90deg, #ef4444, #f87171); }
+
+        .stat-card:hover {
+            border-color: rgba(99, 102, 241, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .stat-icon {
+            font-size: 2rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #e0e7ff;
+            margin-bottom: 0.3rem;
+        }
+
+        .stat-label {
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .section-title {
+            margin-bottom: 1.5rem;
+            color: #e0e7ff;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .admin-links {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.25rem;
+        }
+
+        .admin-link-card {
+            background: rgba(30, 27, 75, 0.4);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 1.5rem;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .admin-link-card:hover {
+            border-color: rgba(99, 102, 241, 0.2);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 32px rgba(99, 102, 241, 0.1);
+        }
+
+        .admin-link-icon {
+            font-size: 2.2rem;
+        }
+
+        .admin-link-text h4 {
+            font-size: 1.05rem;
+            color: #e0e7ff;
+            margin-bottom: 0.3rem;
+            font-weight: 600;
+        }
+
+        .admin-link-text p {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            .admin-layout {
+                flex-direction: column;
+            }
+
+            .admin-sidebar {
+                width: 100%;
+                position: relative;
+                padding: 1rem 0;
+            }
+
+            .admin-main {
+                margin-left: 0;
+            }
+
+            .sidebar-menu {
+                display: flex;
+                overflow-x: auto;
+            }
+
+            .menu-item {
+                padding: 0.8rem 1rem;
+                white-space: nowrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-layout">
+        <aside class="admin-sidebar">
+            <div class="sidebar-header">
+                <h2>🔐 管理中心</h2>
+                <p>在线留言板系统</p>
+            </div>
+            <ul class="sidebar-menu">
+                <li class="menu-item active" onclick="location.href='/manage/index'">
+                    <span class="menu-item-icon">📊</span>
+                    <span>后台首页</span>
+                </li>
+                <li class="menu-item" onclick="location.href='/manage/message'">
+                    <span class="menu-item-icon">💬</span>
+                    <span>留言管理</span>
+                </li>
+                <li class="menu-item" onclick="location.href='/manage/reply'">
+                    <span class="menu-item-icon">📝</span>
+                    <span>回复管理</span>
+                </li>
+                <li class="menu-item" onclick="location.href='/manage/statistics'">
+                    <span class="menu-item-icon">🤖</span>
+                    <span>AI智能助手</span>
+                </li>
+                <li class="menu-item" onclick="location.href='/user/index'">
+                    <span class="menu-item-icon">🌐</span>
+                    <span>访问前台</span>
+                </li>
+            </ul>
+        </aside>
+
+        <main class="admin-main">
+            <div class="admin-header">
+                <div class="admin-user">
+                    <div class="admin-avatar">👤</div>
+                    <div class="admin-info">
+                        <h3 id="adminName">管理员</h3>
+                        <p>在线留言板管理系统</p>
+                    </div>
+                </div>
+                <button class="logout-btn" onclick="logout()">
+                    退出登录
+                </button>
+            </div>
+
+            <div class="welcome-card">
+                <h2>欢迎使用留言板管理系统</h2>
+                <p>在这里您可以管理用户留言、回复用户问题、查看数据统计等操作</p>
+            </div>
+
+            <div class="quick-stats" id="quickStats">
+                <div class="stat-card">
+                    <div class="stat-icon">📝</div>
+                    <div class="stat-value" id="totalMessages">-</div>
+                    <div class="stat-label">总留言数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⏳</div>
+                    <div class="stat-value" id="pendingMessages">-</div>
+                    <div class="stat-label">待处理</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-value" id="repliedMessages">-</div>
+                    <div class="stat-label">已回复</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⚠️</div>
+                    <div class="stat-value" id="riskMessages">-</div>
+                    <div class="stat-label">违规内容</div>
+                </div>
+            </div>
+
+            <h3 class="section-title">快捷功能</h3>
+            <div class="admin-links">
+                <div class="admin-link-card" onclick="location.href='/manage/message'">
+                    <div class="admin-link-icon">💬</div>
+                    <div class="admin-link-text">
+                        <h4>留言管理</h4>
+                        <p>查看、编辑、删除留言</p>
+                    </div>
+                </div>
+                <div class="admin-link-card" onclick="location.href='/manage/reply'">
+                    <div class="admin-link-icon">📝</div>
+                    <div class="admin-link-text">
+                        <h4>回复管理</h4>
+                        <p>添加、编辑、删除回复</p>
+                    </div>
+                </div>
+                <div class="admin-link-card" onclick="location.href='/manage/statistics'">
+                    <div class="admin-link-icon">🤖</div>
+                    <div class="admin-link-text">
+                        <h4>AI智能助手</h4>
+                        <p>智能分类、自动回复</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            checkLogin();
+            loadStatistics();
+        });
+
+        function checkLogin() {
+            fetch('/admin/checkLogin')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.data.loggedIn) {
+                        document.getElementById('adminName').textContent = data.data.username;
+                    } else {
+                        location.href = '/admin/login';
+                    }
+                })
+                .catch(error => {
+                    location.href = '/admin/login';
+                });
+        }
+
+        function loadStatistics() {
+            fetch('/manage/statistics/data')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const stats = data.data;
+                        document.getElementById('totalMessages').textContent = stats.total || 0;
+                        document.getElementById('pendingMessages').textContent = stats.unprocessed || 0;
+                        document.getElementById('repliedMessages').textContent = stats.processed || 0;
+                        document.getElementById('riskMessages').textContent = stats.risky || 0;
+                    }
+                })
+                .catch(error => {
+                    console.error('加载统计数据失败:', error);
+                });
+        }
+
+        function logout() {
+            if (confirm('确定要退出登录吗？')) {
+                location.href = '/admin/logout';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>留言管理 - 在线留言板</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body class="admin-layout">
+    <aside class="admin-sidebar">
+        <div class="sidebar-header">留言板管理</div>
+        <ul class="sidebar-menu">
+            <li><a href="/manage/index">首页概览</a></li>
+            <li><a href="/manage/message" class="active">留言管理</a></li>
+            <li><a href="/manage/statistics">数据统计</a></li>
+            <li><a href="/admin/logout">退出登录</a></li>
+        </ul>
+    </aside>
+
+    <div class="admin-main">
+        <div class="admin-header">
+            <h2 style="font-size:16px;font-weight:600;">留言管理</h2>
+        </div>
+
+        <div class="admin-content">
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <span style="color:#595959;">状态筛选：</span>
+                    <a href="/manage/message" th:class="${status == null} ? 'btn btn-primary btn-sm' : 'btn btn-default btn-sm'">全部</a>
+                    <a href="/manage/message?status=0" th:class="${status != null && status == 0} ? 'btn btn-primary btn-sm' : 'btn btn-default btn-sm'">未处理</a>
+                    <a href="/manage/message?status=1" th:class="${status != null && status == 1} ? 'btn btn-primary btn-sm' : 'btn btn-default btn-sm'">已回复</a>
+                </div>
+                <div class="filter-group">
+                    <button type="button" id="batchCheckBtn" class="btn btn-warning btn-sm" onclick="batchCheckRisk()">批量违规检测</button>
+                    <button type="button" class="btn btn-danger btn-sm" onclick="deleteBatchMessages()">批量删除</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="table-wrapper">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th><input type="checkbox" id="selectAll" class="checkbox" onclick="toggleSelectAll()"></th>
+                                <th>ID</th>
+                                <th>留言人</th>
+                                <th>留言内容</th>
+                                <th>联系方式</th>
+                                <th>时间</th>
+                                <th>状态</th>
+                                <th>分类</th>
+                                <th>标记</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="msg : ${messages}">
+                                <td><input type="checkbox" class="checkbox row-checkbox" th:value="${msg.id}"></td>
+                                <td th:text="${msg.id}">1</td>
+                                <td th:text="${msg.username}">匿名</td>
+                                <td>
+                                    <div class="text-ellipsis" th:text="${msg.contentSummary}" th:title="${msg.content}">摘要</div>
+                                </td>
+                                <td th:text="${msg.contact != null} ? ${msg.contact} : '-'">-</td>
+                                <td th:text="${#dates.format(msg.createTime, 'MM-dd HH:mm')}">01-01</td>
+                                <td>
+                                    <span class="tag" th:class="${msg.status == 1} ? 'tag tag-success' : 'tag tag-warning'"
+                                          th:text="${msg.statusText}">未处理</span>
+                                </td>
+                                <td>
+                                    <span class="tag tag-info" th:if="${msg.type != null}" th:text="${msg.type}">其他</span>
+                                </td>
+                                <td>
+                                    <span class="tag tag-danger" th:if="${msg.isRisk == 1}">违规</span>
+                                    <span th:if="${msg.isRisk == 0}">-</span>
+                                </td>
+                                <td>
+                                    <a th:href="@{/manage/reply(messageId=${msg.id})}" class="btn btn-primary btn-sm">回复</a>
+                                    <button type="button" class="btn btn-success btn-sm"
+                                            th:id="'aiClassifyBtn_' + ${msg.id}"
+                                            th:onclick="'aiClassify(' + ${msg.id} + ')'">AI分类</button>
+                                    <button type="button" class="btn btn-warning btn-sm"
+                                            th:id="'aiCheckRiskBtn_' + ${msg.id}"
+                                            th:onclick="'aiCheckRisk(' + ${msg.id} + ')'">违规检查</button>
+                                    <button type="button" class="btn btn-info btn-sm"
+                                            th:if="${msg.status == 0}"
+                                            th:onclick="'updateMessageStatus(' + ${msg.id} + ', 1)'">标记已回复</button>
+                                    <button type="button" class="btn btn-default btn-sm"
+                                            th:if="${msg.status == 1}"
+                                            th:onclick="'updateMessageStatus(' + ${msg.id} + ', 0)'">标记未处理</button>
+                                    <button type="button" class="btn btn-danger btn-sm"
+                                            th:onclick="'deleteMessage(' + ${msg.id} + ')'">删除</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div th:if="${#lists.isEmpty(messages)}" style="text-align:center;padding:40px;color:#8c8c8c;">
+                    暂无留言数据
+                </div>
+
+                <div class="pagination" th:if="${totalPages > 0}">
+                    <span class="pagination-info">
+                        共 <span th:text="${totalCount}">0</span> 条，第 <span th:text="${pageNum}">1</span> / <span th:text="${totalPages}">1</span> 页
+                    </span>
+                    <a th:href="@{/manage/message(status=${status}, pageNum=${pageNum - 1}, pageSize=${pageSize})}"
+                       th:class="${!hasPrev} ? 'disabled' : ''"
+                       th:if="${hasPrev}">上一页</a>
+                    <span class="current" th:text="${pageNum}">1</span>
+                    <a th:href="@{/manage/message(status=${status}, pageNum=${pageNum + 1}, pageSize=${pageSize})}"
+                       th:class="${!hasNext} ? 'disabled' : ''"
+                       th:if="${hasNext}">下一页</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script th:src="@{/js/manage.js(t=${#dates.createNow().getTime()})}"></script>
+</body>
+</html>

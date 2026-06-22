@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.online.messageboard.mapper.MessageMapper">
+
+    <!-- 基础结果映射 -->
+    <resultMap id="BaseResultMap" type="com.online.messageboard.entity.Message">
+        <id column="id" property="id"/>
+        <result column="username" property="username"/>
+        <result column="content" property="content"/>
+        <result column="contact" property="contact"/>
+        <result column="create_time" property="createTime"/>
+        <result column="status" property="status"/>
+        <result column="type" property="type"/>
+        <result column="is_risk" property="isRisk"/>
+    </resultMap>
+
+    <!-- 插入留言 -->
+    <insert id="insert" parameterType="com.online.messageboard.entity.Message" 
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO message (username, content, contact, create_time, status, type, is_risk)
+        VALUES (
+            #{username},
+            #{content},
+            #{contact},
+            #{createTime},
+            #{status},
+            #{type},
+            #{isRisk}
+        )
+    </insert>
+
+    <!-- 根据ID删除留言 -->
+    <delete id="deleteById">
+        DELETE FROM message WHERE id = #{id}
+    </delete>
+
+    <!-- 批量删除留言 -->
+    <delete id="deleteBatch">
+        DELETE FROM message WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 更新留言 -->
+    <update id="update" parameterType="com.online.messageboard.entity.Message">
+        UPDATE message
+        <set>
+            <if test="username != null">username = #{username},</if>
+            <if test="content != null">content = #{content},</if>
+            <if test="contact != null">contact = #{contact},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="type != null">type = #{type},</if>
+            <if test="isRisk != null">is_risk = #{isRisk},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!-- 根据ID查询留言 -->
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT * FROM message WHERE id = #{id}
+    </select>
+
+    <!-- 分页查询留言列表（按时间倒序） -->
+    <select id="selectList" resultMap="BaseResultMap">
+        SELECT * FROM message
+        ORDER BY create_time DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 根据状态筛选留言 -->
+    <select id="selectByStatus" resultMap="BaseResultMap">
+        SELECT * FROM message
+        WHERE status = #{status}
+        ORDER BY create_time DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 查询留言总数 -->
+    <select id="selectCount" resultType="int">
+        SELECT COUNT(*) FROM message
+    </select>
+
+    <!-- 根据状态查询留言数量 -->
+    <select id="selectCountByStatus" resultType="int">
+        SELECT COUNT(*) FROM message WHERE status = #{status}
+    </select>
+
+    <!-- 获取统计数据 -->
+    <select id="selectStatistics" resultType="map">
+        SELECT 
+            COUNT(*) as total,
+            SUM(CASE WHEN status = 0 THEN 1 ELSE 0 END) as unprocessed,
+            SUM(CASE WHEN status = 1 THEN 1 ELSE 0 END) as processed,
+            SUM(CASE WHEN type = '咨询' THEN 1 ELSE 0 END) as consultation,
+            SUM(CASE WHEN type = '建议' THEN 1 ELSE 0 END) as suggestion,
+            SUM(CASE WHEN type = '投诉' THEN 1 ELSE 0 END) as complaint,
+            SUM(CASE WHEN type = '其他' OR type = '未知' OR type IS NULL THEN 1 ELSE 0 END) as other,
+            SUM(CASE WHEN is_risk = 1 THEN 1 ELSE 0 END) as risky
+        FROM message
+    </select>
+
+    <!-- 更新留言状态 -->
+    <update id="updateStatus">
+        UPDATE message SET status = #{status} WHERE id = #{id}
+    </update>
+
+    <!-- 更新留言AI分类 -->
+    <update id="updateType">
+        UPDATE message SET type = #{type} WHERE id = #{id}
+    </update>
+
+    <!-- 更新留言违规标记 -->
+    <update id="updateIsRisk">
+        UPDATE message SET is_risk = #{isRisk} WHERE id = #{id}
+    </update>
+
+    <!-- 批量更新违规标记 -->
+    <update id="batchUpdateIsRisk">
+        UPDATE message SET is_risk = #{isRisk} WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+</mapper>

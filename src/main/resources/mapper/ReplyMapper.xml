@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.online.messageboard.mapper.ReplyMapper">
+
+    <!-- 结果映射：回复实体 -->
+    <resultMap id="replyResultMap" type="com.online.messageboard.entity.Reply">
+        <id property="id" column="id"/>
+        <result property="messageId" column="message_id"/>
+        <result property="replyContent" column="reply_content"/>
+        <result property="replyTime" column="reply_time"/>
+        <result property="adminName" column="admin_name"/>
+    </resultMap>
+
+    <!-- 根据留言ID查询回复列表 -->
+    <select id="selectByMessageId" resultMap="replyResultMap">
+        SELECT * FROM reply WHERE message_id = #{messageId} ORDER BY reply_time DESC
+    </select>
+
+    <!-- 根据ID查询单条回复 -->
+    <select id="selectById" resultMap="replyResultMap">
+        SELECT * FROM reply WHERE id = #{id}
+    </select>
+
+    <!-- 插入新回复 -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO reply (message_id, reply_content, reply_time, admin_name)
+        VALUES (#{messageId}, #{replyContent}, #{replyTime}, #{adminName})
+    </insert>
+
+    <!-- 根据ID更新回复内容 -->
+    <update id="updateById">
+        UPDATE reply SET reply_content = #{replyContent}, reply_time = #{replyTime}
+        WHERE id = #{id}
+    </update>
+
+    <!-- 根据ID删除回复 -->
+    <delete id="deleteById">
+        DELETE FROM reply WHERE id = #{id}
+    </delete>
+
+    <!-- 根据留言ID删除所有关联回复 -->
+    <delete id="deleteByMessageId">
+        DELETE FROM reply WHERE message_id = #{messageId}
+    </delete>
+</mapper>

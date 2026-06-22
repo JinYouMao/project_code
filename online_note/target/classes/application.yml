@@ -1,0 +1,36 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: message-board
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/message_board_db?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: root
+    password: 0923
+  # Thymeleaf模板引擎配置
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    mode: HTML
+    cache: false
+    encoding: UTF-8
+
+mybatis:
+  mapper-locations: classpath*:mapper/*.xml
+  type-aliases-package: com.online.messageboard.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+# 通义千问AI API配置
+ai:
+  tongyi:
+    api-key: sk-a322f7d891b340ada423f4ff76ff3f10  # 替换为你的API Key
+    model: qwen-turbo  # 可选择 qwen-turbo、qwen-plus、qwen-max 等
+    enable: false  # 是否启用真实API，false则使用本地模拟
+
+logging:
+  level:
+    com.online.messageboard: debug

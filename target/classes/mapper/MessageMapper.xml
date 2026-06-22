@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.online.messageboard.mapper.MessageMapper">
+
+    <!-- 结果映射：留言实体 -->
+    <resultMap id="messageResultMap" type="com.online.messageboard.entity.Message">
+        <id property="id" column="id"/>
+        <result property="username" column="username"/>
+        <result property="content" column="content"/>
+        <result property="contact" column="contact"/>
+        <result property="createTime" column="create_time"/>
+        <result property="status" column="status"/>
+        <result property="type" column="type"/>
+        <result property="isRisk" column="is_risk"/>
+    </resultMap>
+
+    <!-- 结果映射：留言实体 + 关联回复 -->
+    <resultMap id="messageWithReplyResultMap" type="com.online.messageboard.entity.Message" extends="messageResultMap">
+        <association property="reply" javaType="com.online.messageboard.entity.Reply">
+            <id property="id" column="reply_id"/>
+            <result property="messageId" column="reply_message_id"/>
+            <result property="replyContent" column="reply_content"/>
+            <result property="replyTime" column="reply_time"/>
+            <result property="adminName" column="admin_name"/>
+        </association>
+    </resultMap>
+
+    <!-- 根据ID查询单条留言（包含回复） -->
+    <select id="selectById" resultMap="messageWithReplyResultMap">
+        SELECT
+            m.*,
+            r.id AS reply_id,
+            r.message_id AS reply_message_id,
+            r.reply_content,
+            r.reply_time,
+            r.admin_name
+        FROM message m
+        LEFT JOIN reply r ON m.id = r.message_id
+        WHERE m.id = #{id}
+        ORDER BY r.reply_time DESC
+        LIMIT 1
+    </select>
+
+    <!-- 分页查询留言列表（按时间倒序） -->
+    <select id="selectByPage" resultMap="messageResultMap">
+        SELECT * FROM message
+        ORDER BY create_time DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 根据状态分页查询留言 -->
+    <select id="selectByStatusAndPage" resultMap="messageResultMap">
+        SELECT * FROM message
+        WHERE status = #{status}
+        ORDER BY create_time DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 查询总记录数 -->
+    <select id="countAll" resultType="int">
+        SELECT COUNT(*) FROM message
+    </select>
+
+    <!-- 根据状态查询记录数 -->
+    <select id="countByStatus" resultType="int">
+        SELECT COUNT(*) FROM message WHERE status = #{status}
+    </select>
+
+    <!-- 插入新留言 -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO message (username, content, contact, create_time, status, type, is_risk)
+        VALUES (#{username}, #{content}, #{contact}, #{createTime}, #{status}, #{type}, #{isRisk})
+    </insert>
+
+    <!-- 根据ID更新留言状态 -->
+    <update id="updateStatusById">
+        UPDATE message SET status = #{status} WHERE id = #{id}
+    </update>
+
+    <!-- 根据ID更新留言分类和违规标记 -->
+    <update id="updateTypeAndRiskById">
+        UPDATE message SET type = #{type}, is_risk = #{isRisk} WHERE id = #{id}
+    </update>
+
+    <!-- 根据ID删除留言 -->
+    <delete id="deleteById">
+        DELETE FROM message WHERE id = #{id}
+    </delete>
+
+    <!-- 批量删除留言 -->
+    <delete id="deleteBatchByIds">
+        DELETE FROM message WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 查询各类型留言数量统计 -->
+    <select id="countByType" resultType="java.util.HashMap">
+        SELECT type, COUNT(*) AS count FROM message GROUP BY type
+    </select>
+
+    <!-- 查询违规留言数量 -->
+    <select id="countRisk" resultType="int">
+        SELECT COUNT(*) FROM message WHERE is_risk = 1
+    </select>
+
+    <!-- 查询所有留言 -->
+    <select id="selectAll" resultMap="messageResultMap">
+        SELECT * FROM message ORDER BY create_time DESC
+    </select>
+</mapper>

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>回复管理 - 在线留言板</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body class="admin-layout">
+    <aside class="admin-sidebar">
+        <div class="sidebar-header">留言板管理</div>
+        <ul class="sidebar-menu">
+            <li><a href="/manage/index">首页概览</a></li>
+            <li><a href="/manage/message" class="active">留言管理</a></li>
+            <li><a href="/manage/statistics">数据统计</a></li>
+            <li><a href="/admin/logout">退出登录</a></li>
+        </ul>
+    </aside>
+
+    <div class="admin-main">
+        <div class="admin-header">
+            <h2 style="font-size:16px;font-weight:600;">回复管理</h2>
+        </div>
+
+        <div class="admin-content">
+            <div class="card" th:if="${message != null}">
+                <div class="card-title">原留言信息</div>
+                <div style="margin-bottom:8px;">
+                    <strong th:text="${message.username}">匿名用户</strong>
+                    <span style="color:#8c8c8c;margin-left:12px;"
+                          th:text="${#dates.format(message.createTime, 'yyyy-MM-dd HH:mm:ss')}">2026-01-01</span>
+                    <span class="tag" th:class="${message.status == 1} ? 'tag tag-success' : 'tag tag-warning'"
+                          th:text="${message.statusText}"
+                          style="margin-left:12px;">未处理</span>
+                </div>
+                <div style="color:#595959;line-height:1.8;padding:12px;background:#f5f7fa;border-radius:4px;"
+                     th:text="${message.content}">留言内容</div>
+                <div style="margin-top:12px;">
+                    <button type="button" class="btn btn-success btn-sm"
+                            th:id="'aiGenerateReply_' + ${message.id}"
+                            th:onclick="'aiGenerateReply(' + ${message.id} + ')'">AI生成回复</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">回复操作</div>
+                <form id="replyForm">
+                    <input type="hidden" id="replyMessageId" name="messageId" th:value="${message != null} ? ${message.id} : ''">
+                    <div class="form-group">
+                        <label class="form-label">回复内容</label>
+                        <textarea id="replyContent" name="replyContent" class="form-textarea"
+                                  placeholder="请输入回复内容..." style="width:100%;min-height:200px;"></textarea>
+                    </div>
+                    <div>
+                        <button type="submit" id="addReplyBtn" class="btn btn-primary">提交回复</button>
+                        <a href="/manage/message" class="btn btn-default" style="margin-left:8px;">返回列表</a>
+                    </div>
+                </form>
+            </div>
+
+            <div class="card" th:if="${not #lists.isEmpty(replies)}">
+                <div class="card-title">已有回复</div>
+                <div class="table-wrapper">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>回复内容</th>
+                                <th>管理员</th>
+                                <th>回复时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="reply : ${replies}">
+                                <td th:text="${reply.id}">1</td>
+                                <td th:text="${reply.replyContent}">回复内容</td>
+                                <td th:text="${reply.adminName}">admin</td>
+                                <td th:text="${#dates.format(reply.replyTime, 'yyyy-MM-dd HH:mm:ss')}">2026-01-01</td>
+                                <td>
+                                    <button type="button" class="btn btn-primary btn-sm"
+                                            th:onclick="'editReply(' + ${reply.id} + ')'">编辑</button>
+                                    <button type="button" class="btn btn-danger btn-sm"
+                                            th:onclick="'deleteReply(' + ${reply.id} + ', ' + ${reply.messageId} + ')'">删除</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script th:src="@{/js/manage.js(t=${#dates.createNow().getTime()})}"></script>
+</body>
+</html>

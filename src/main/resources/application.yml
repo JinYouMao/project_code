@@ -1,0 +1,36 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: message-board
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/message_board_db?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: root
+    password: 0923
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    mode: HTML
+    cache: false
+    encoding: UTF-8
+
+# mybatis:
+#   mapper-locations: classpath*:mapper/**/*.xml,classpath:mapper/*.xml
+#   type-aliases-package: com.online.messageboard.entity
+#   configuration:
+#     map-underscore-to-camel-case: true
+#     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+# 通义千问AI配置
+ai:
+  tongyi:
+    api-key: sk-a322f7d891b340ada423f4ff76ff3f10
+    model: qwen-turbo
+    enable: true # 设为false使用本地模拟，设为true调用真实API
+    timeout: 30000
+
+logging:
+  level:
+    com.online.messageboard: debug

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>留言详情 - 在线留言板</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="logo">💬 在线留言板</div>
+            <nav class="nav">
+                <a href="/user/index">留言列表</a>
+                <a href="/user/add">发表留言</a>
+                <a href="/admin/login">管理后台</a>
+                <div class="user-info">
+                    <span class="user-name" th:text="${session.user?.nickname != null ? session.user.nickname : session.user.username}">用户</span>
+                    <a href="/user/logout" class="btn logout-btn">退出</a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <h1 class="page-title">留言详情</h1>
+
+            <div class="message-detail" th:if="${message != null}">
+                <div class="detail-header">
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <h2 style="font-size: 20px; font-weight: 600; margin: 0;" th:text="${message.username}">匿名用户</h2>
+                        <div class="detail-meta">
+                            <span th:text="${#dates.format(message.createTime, 'yyyy-MM-dd HH:mm:ss')}">2026-01-01</span>
+                            <span th:if="${message.contact != null}" th:text="'联系方式：' + ${message.contact}"></span>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <span class="tag" th:class="${message.status == 1} ? 'tag tag-success' : 'tag tag-warning'"
+                              th:text="${message.statusText}">未处理</span>
+                        <span class="tag tag-info" th:if="${message.type != null}" th:text="${message.type}">其他</span>
+                        <span class="tag tag-danger" th:if="${message.isRisk == 1}">违规</span>
+                    </div>
+                </div>
+
+                <div class="detail-content" th:text="${message.content}">留言内容</div>
+
+                <div th:if="${message.reply != null}" class="reply-section">
+                    <div class="reply-title">📝 管理员回复</div>
+                    <div class="reply-content" th:text="${message.reply.replyContent}">回复内容</div>
+                    <div class="reply-meta">
+                        <span th:text="${message.reply.adminName}">admin</span>
+                        <span style="color: var(--text-light);">·</span>
+                        <span th:text="${#dates.format(message.reply.replyTime, 'yyyy-MM-dd HH:mm:ss')}">2026-01-01</span>
+                    </div>
+                </div>
+
+                <div th:if="${message.reply == null}" class="reply-section no-reply">
+                    <div class="reply-title">暂无管理员回复</div>
+                    <p style="color: var(--text-secondary); font-size: 14px; margin-top: 8px;">您的留言已提交，管理员将在看到后尽快回复，请耐心等待。</p>
+                </div>
+            </div>
+
+            <div style="margin-top: 24px;">
+                <a href="/user/index" class="btn btn-default">← 返回列表</a>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>在线留言板管理系统 © 2026</p>
+        </div>
+    </footer>
+</body>
+</html>

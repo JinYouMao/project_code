@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数据统计 - 在线留言板</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body class="admin-layout">
+    <aside class="admin-sidebar">
+        <div class="sidebar-header">留言板管理</div>
+        <ul class="sidebar-menu">
+            <li><a href="/manage/index">首页概览</a></li>
+            <li><a href="/manage/message">留言管理</a></li>
+            <li><a href="/manage/statistics" class="active">数据统计</a></li>
+            <li><a href="/admin/logout">退出登录</a></li>
+        </ul>
+    </aside>
+
+    <div class="admin-main">
+        <div class="admin-header">
+            <h2 style="font-size:16px;font-weight:600;">数据统计</h2>
+        </div>
+
+        <div class="admin-content">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" th:text="${totalCount}">0</div>
+                    <div class="stat-label">留言总数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" th:text="${unhandledCount}" style="color:#faad14;">0</div>
+                    <div class="stat-label">未处理</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" th:text="${repliedCount}" style="color:#52c41a;">0</div>
+                    <div class="stat-label">已回复</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" th:text="${riskCount}" style="color:#ff4d4f;">0</div>
+                    <div class="stat-label">违规留言</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">类型分布</div>
+                <div id="typeChart"></div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">类型统计明细</div>
+                <div class="table-wrapper">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>类型</th>
+                                <th>数量</th>
+                                <th>占比</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="stat : ${typeStats}">
+                                <td th:text="${stat.type}">其他</td>
+                                <td th:text="${stat.count}">0</td>
+                                <td>
+                                    <span th:with="total=${totalCount > 0} ? ${totalCount} : 1"
+                                          th:text="${#numbers.formatDecimal((stat.count * 100.0 / total), 1, 1)} + '%'">0%</span>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(typeStats)}">
+                                <td colspan="3" style="text-align:center;color:#8c8c8c;">暂无数据</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        var typeChartData = /*[[${typeStats}]]*/ [];
+        /*]]>*/
+    </script>
+    <script th:src="@{/js/manage.js}"></script>
+</body>
+</html>

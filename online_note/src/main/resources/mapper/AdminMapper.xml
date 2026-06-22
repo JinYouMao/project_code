@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.online.messageboard.mapper.AdminMapper">
+
+    <!-- 基础结果映射 -->
+    <resultMap id="BaseResultMap" type="com.online.messageboard.entity.Admin">
+        <id column="id" property="id"/>
+        <result column="username" property="username"/>
+        <result column="password" property="password"/>
+    </resultMap>
+
+    <!-- 根据用户名和密码查询管理员 -->
+    <select id="selectByUsernameAndPassword" resultMap="BaseResultMap">
+        SELECT * FROM admin
+        WHERE username = #{username} AND password = #{password}
+    </select>
+
+    <!-- 根据用户名查询管理员 -->
+    <select id="selectByUsername" resultMap="BaseResultMap">
+        SELECT * FROM admin WHERE username = #{username}
+    </select>
+
+</mapper>

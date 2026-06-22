@@ -1,0 +1,1153 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>留言管理 - 管理后台</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0f0a1a;
+        }
+
+        .admin-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .admin-sidebar {
+            width: 260px;
+            background: linear-gradient(180deg, #1e1b4b 0%, #312e81 100%);
+            color: white;
+            padding: 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            padding: 2rem 1.5rem 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .sidebar-header h2 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+            color: #e0e7ff;
+        }
+
+        .sidebar-header p {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 0.5rem 0;
+            flex: 1;
+        }
+
+        .menu-item {
+            padding: 0.85rem 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: rgba(255, 255, 255, 0.55);
+            font-size: 0.9rem;
+            font-weight: 500;
+            position: relative;
+            border-left: 3px solid transparent;
+        }
+
+        .menu-item:hover {
+            color: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .menu-item.active {
+            color: #e0e7ff;
+            background: rgba(99, 102, 241, 0.15);
+            border-left-color: #818cf8;
+        }
+
+        .menu-item-icon {
+            font-size: 1.1rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        .admin-main {
+            flex: 1;
+            padding: 2rem;
+            margin-left: 260px;
+            background: #0f0a1a;
+            min-height: 100vh;
+        }
+
+        .admin-header {
+            background: rgba(30, 27, 75, 0.5);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 1.25rem 1.75rem;
+            border-radius: 16px;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .admin-user {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .admin-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.3rem;
+        }
+
+        .admin-info h3 {
+            font-size: 1rem;
+            color: #e0e7ff;
+            font-weight: 600;
+        }
+
+        .admin-info p {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .logout-btn {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            padding: 0.55rem 1.25rem;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        .filter-bar {
+            background: rgba(30, 27, 75, 0.5);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 1.25rem 1.5rem;
+            border-radius: 16px;
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .filter-group label {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .filter-select {
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            font-size: 0.85rem;
+            color: #e0e7ff;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-select:focus {
+            border-color: rgba(99, 102, 241, 0.4);
+        }
+
+        .filter-select option {
+            background: #1e1b4b;
+            color: #e0e7ff;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .data-table {
+            background: rgba(30, 27, 75, 0.4);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .table-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-header h3 {
+            font-size: 1.1rem;
+            color: #e0e7ff;
+            font-weight: 600;
+        }
+
+        .table-header label {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.85rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .table-header input[type="checkbox"] {
+            accent-color: #6366f1;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 0.85rem 1.25rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        th {
+            background: rgba(255, 255, 255, 0.03);
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        td {
+            color: #c7d2fe;
+            font-size: 0.9rem;
+        }
+
+        tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .checkbox-cell {
+            width: 40px;
+            text-align: center;
+        }
+
+        .checkbox-cell input[type="checkbox"] {
+            accent-color: #6366f1;
+        }
+
+        .content-preview {
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .action-cell {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            max-width: 280px;
+        }
+
+        .btn-xs {
+            padding: 0.3rem 0.65rem;
+            font-size: 0.78rem;
+            border-radius: 6px;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 2px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.08);
+            color: #c7d2fe;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .btn-danger {
+            background: rgba(239, 68, 68, 0.15);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .btn-danger:hover {
+            background: rgba(239, 68, 68, 0.25);
+        }
+
+        .btn-ai-tag {
+            background: rgba(139, 92, 246, 0.15);
+            color: #c4b5fd;
+            border: 1px solid rgba(139, 92, 246, 0.2);
+        }
+
+        .btn-ai-tag:hover {
+            background: rgba(139, 92, 246, 0.25);
+        }
+
+        .btn-warning {
+            background: rgba(245, 158, 11, 0.15);
+            color: #fcd34d;
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+
+        .btn-warning:hover {
+            background: rgba(245, 158, 11, 0.25);
+        }
+
+        .btn-success {
+            background: rgba(16, 185, 129, 0.15);
+            color: #6ee7b7;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .btn-success:hover {
+            background: rgba(16, 185, 129, 0.25);
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            font-weight: 500;
+        }
+
+        .tag-info {
+            background: rgba(99, 102, 241, 0.15);
+            color: #a5b4fc;
+        }
+
+        .tag-success {
+            background: rgba(16, 185, 129, 0.15);
+            color: #6ee7b7;
+        }
+
+        .tag-warning {
+            background: rgba(245, 158, 11, 0.15);
+            color: #fcd34d;
+        }
+
+        .tag-secondary {
+            background: rgba(255, 255, 255, 0.08);
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .status-replied {
+            background: rgba(16, 185, 129, 0.15);
+            color: #6ee7b7;
+        }
+
+        .status-pending {
+            background: rgba(245, 158, 11, 0.15);
+            color: #fcd34d;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            padding: 1.25rem;
+            background: rgba(30, 27, 75, 0.4);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 16px;
+            margin-top: 1.5rem;
+        }
+
+        .page-info {
+            color: rgba(255, 255, 255, 0.5);
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .pagination .btn {
+            padding: 0.5rem 1.2rem;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+            color: #c7d2fe;
+        }
+
+        .pagination .btn:hover:not(:disabled) {
+            background: rgba(99, 102, 241, 0.15);
+            border-color: rgba(99, 102, 241, 0.3);
+        }
+
+        .pagination .btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: rgba(30, 27, 75, 0.95);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 32px 64px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-large {
+            max-width: 700px;
+        }
+
+        .modal-header h3 {
+            color: #e0e7ff;
+            font-size: 1.15rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .modal-body p {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .modal-body textarea {
+            width: 100%;
+            min-height: 200px;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            font-size: 0.95rem;
+            resize: vertical;
+            font-family: 'Inter', sans-serif;
+            color: #e0e7ff;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .modal-body textarea::placeholder {
+            color: rgba(255, 255, 255, 0.25);
+        }
+
+        .modal-body textarea:focus {
+            border-color: rgba(99, 102, 241, 0.4);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.08);
+        }
+
+        .modal-footer {
+            margin-top: 1.5rem;
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+        }
+
+        .modal-footer .btn {
+            padding: 0.6rem 1.5rem;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .modal-footer .btn-primary {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            border: none;
+            color: white;
+        }
+
+        .modal-footer .btn-primary:hover {
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .modal-footer .btn-secondary {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #c7d2fe;
+        }
+
+        .modal-footer .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .modal-footer .btn-danger {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+        }
+
+        .modal-footer .btn-danger:hover {
+            background: rgba(239, 68, 68, 0.25);
+        }
+
+        .original-message-box {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+        }
+
+        .original-message-box p {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .original-message-box p strong {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        @media (max-width: 768px) {
+            .admin-layout {
+                flex-direction: column;
+            }
+
+            .admin-sidebar {
+                width: 100%;
+                position: relative;
+            }
+
+            .admin-main {
+                margin-left: 0;
+            }
+
+            .sidebar-menu {
+                display: flex;
+                overflow-x: auto;
+            }
+
+            .menu-item {
+                padding: 0.8rem 1rem;
+                white-space: nowrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-layout">
+        <aside class="admin-sidebar">
+            <div class="sidebar-header">
+                <h2>🔐 管理中心</h2>
+                <p>在线留言板系统</p>
+            </div>
+            <ul class="sidebar-menu">
+                <li class="menu-item" onclick="location.href='/manage/index'">
+                    <span class="menu-item-icon">📊</span>
+                    <span>后台首页</span>
+                </li>
+                <li class="menu-item active" onclick="location.href='/manage/message'">
+                    <span class="menu-item-icon">💬</span>
+                    <span>留言管理</span>
+                </li>
+                <li class="menu-item" onclick="location.href='/manage/reply'">
+                    <span class="menu-item-icon">📝</span>
+                    <span>回复管理</span>
+                </li>
+                <li class="menu-item" onclick="location.href='/manage/statistics'">
+                    <span class="menu-item-icon">🤖</span>
+                    <span>AI智能助手</span>
+                </li>
+                <li class="menu-item" onclick="location.href='/user/index'">
+                    <span class="menu-item-icon">🌐</span>
+                    <span>访问前台</span>
+                </li>
+            </ul>
+        </aside>
+
+        <main class="admin-main">
+            <div class="admin-header">
+                <div class="admin-user">
+                    <div class="admin-avatar">👤</div>
+                    <div class="admin-info">
+                        <h3 id="adminName">管理员</h3>
+                        <p>在线留言板管理系统</p>
+                    </div>
+                </div>
+                <button class="logout-btn" onclick="logout()">退出登录</button>
+            </div>
+
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <label>筛选：</label>
+                    <select id="statusFilter" class="filter-select" onchange="filterMessages()">
+                        <option value="">全部状态</option>
+                        <option value="0">未处理</option>
+                        <option value="1">已回复</option>
+                    </select>
+                </div>
+                <div class="action-buttons">
+                    <button class="btn btn-danger btn-sm" onclick="batchDelete()">批量删除</button>
+                </div>
+            </div>
+
+            <div class="data-table">
+                <div class="table-header">
+                    <h3>💬 留言列表</h3>
+                    <label>
+                        <input type="checkbox" id="selectAllTop" onchange="toggleSelectAll(this.checked)"> 全选
+                    </label>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="checkbox-cell">
+                                <input type="checkbox" id="selectAllHead" onchange="toggleSelectAll(this.checked)">
+                            </th>
+                            <th>ID</th>
+                            <th>留言人</th>
+                            <th>内容</th>
+                            <th>分类</th>
+                            <th>状态</th>
+                            <th>时间</th>
+                            <th>违规</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="messageTableBody">
+                        <tr>
+                            <td colspan="9" class="text-center" style="padding: 2rem;">加载中...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="pagination">
+                <button class="btn btn-sm" onclick="prevPage()" id="prevBtn">上一页</button>
+                <span class="page-info" id="pageInfo">第 1 页 / 共 1 页</span>
+                <button class="btn btn-sm" onclick="nextPage()" id="nextBtn">下一页</button>
+            </div>
+        </main>
+    </div>
+
+    <div id="replyModal" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h3>📝 回复留言</h3>
+            </div>
+            <div class="modal-body">
+                <div id="originalMessage" class="original-message-box">
+                    <p><strong>留言人：</strong><span id="msgUsername"></span></p>
+                    <p><strong>内容：</strong></p>
+                    <p id="msgContent"></p>
+                </div>
+                <textarea id="replyContent" placeholder="请输入回复内容..."></textarea>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeReplyModal()">取消</button>
+                <button class="btn btn-primary" onclick="submitReply()">提交回复</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="confirmModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>⚠️ 确认删除</h3>
+            </div>
+            <div class="modal-body">
+                <p id="confirmMessage">确定要删除这条留言吗？此操作不可恢复。</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeConfirmModal()">取消</button>
+                <button class="btn btn-danger" id="confirmBtn">确认删除</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="alertModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="alertTitle">提示</h3>
+            </div>
+            <div class="modal-body">
+                <p id="alertMessage"></p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="closeAlert()">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/manage.js"></script>
+    <script>
+        let currentPage = 1;
+        let pageSize = 10;
+        let totalPages = 1;
+        let currentStatus = '';
+        let selectedIds = [];
+        let currentReplyMessageId = null;
+        let currentReplyId = null;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            checkLogin();
+            loadMessages();
+        });
+
+        function checkLogin() {
+            fetch('/admin/checkLogin')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.data.loggedIn) {
+                        document.getElementById('adminName').textContent = data.data.username;
+                    } else {
+                        location.href = '/admin/login';
+                    }
+                })
+                .catch(error => {
+                    location.href = '/admin/login';
+                });
+        }
+
+        function logout() {
+            if (confirm('确定要退出登录吗？')) {
+                location.href = '/admin/logout';
+            }
+        }
+
+        function loadMessages() {
+            const status = document.getElementById('statusFilter').value;
+            let url = '/manage/message/list?pageNum=' + currentPage + '&pageSize=' + pageSize;
+            if (status !== '') {
+                url += '&status=' + status;
+            }
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        displayMessages(data.data);
+                        updatePagination(data.total);
+                    } else {
+                        showAlert('错误', '加载失败');
+                    }
+                })
+                .catch(error => {
+                    showAlert('错误', '网络错误');
+                });
+        }
+
+        function displayMessages(messages) {
+            const tbody = document.getElementById('messageTableBody');
+
+            if (!messages || messages.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" class="text-center" style="padding: 2rem;">暂无留言数据</td></tr>';
+                return;
+            }
+
+            let html = '';
+            messages.forEach(msg => {
+                const statusClass = msg.status === 1 ? 'status-replied' : 'status-pending';
+                const statusText = msg.status === 1 ? '已回复' : '未处理';
+                const riskClass = msg.isRisk === 1 ? 'style="color: #f87171; font-weight: bold;"' : '';
+                const typeClass = getTypeClass(msg.type);
+                const contentPreview = msg.content.length > 50 ? msg.content.substring(0, 50) + '...' : msg.content;
+
+                html += `
+                    <tr ${msg.isRisk === 1 ? 'style="background-color: rgba(239, 68, 68, 0.05);"' : ''}>
+                        <td class="checkbox-cell">
+                            <input type="checkbox" value="${msg.id}" onchange="toggleSelect(${msg.id})">
+                        </td>
+                        <td>${msg.id}</td>
+                        <td>${escapeHtml(msg.username)}</td>
+                        <td class="content-preview" ${riskClass} title="${escapeHtml(msg.content)}">${escapeHtml(contentPreview)}</td>
+                        <td><span class="tag ${typeClass}">${msg.type}</span></td>
+                        <td><span class="tag ${statusClass}">${statusText}</span></td>
+                        <td>${msg.createTime}</td>
+                        <td>${msg.isRisk === 1 ? '<span style="color:#f87171;font-weight:bold;">⚠️违规</span>' : '<span style="color:#6ee7b7;">正常</span>'}</td>
+                        <td class="action-cell">
+                            ${msg.status === 0 ? '<button class="btn btn-warning btn-xs" onclick="toggleStatus(' + msg.id + ', 0)">标记已回复</button>' : '<button class="btn btn-secondary btn-xs" onclick="toggleStatus(' + msg.id + ', 1)">标记未处理</button>'}
+                            <button class="btn btn-ai-tag btn-xs" onclick="aiClassify(' + msg.id + ')">🏷️分类</button>
+                            <button class="btn btn-success btn-xs" onclick="aiGenerateReply(' + msg.id + ')">🤖AI回复</button>
+                            ${msg.status === 0 ? '<button class="btn btn-primary btn-xs" onclick="openReplyModal(' + msg.id + ')">回复</button>' : '<button class="btn btn-secondary btn-xs" onclick="openReplyModal(' + msg.id + ')">编辑回复</button>'}
+                            <button class="btn btn-danger btn-xs" onclick="deleteMessage(' + msg.id + ')">删除</button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tbody.innerHTML = html;
+        }
+
+        function getTypeClass(type) {
+            const classes = {
+                '咨询': 'tag-info',
+                '建议': 'tag-success',
+                '投诉': 'tag-warning',
+                '其他': 'tag-secondary',
+                '未知': 'tag-secondary',
+                '感谢': 'tag-success'
+            };
+            return classes[type] || 'tag-secondary';
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function filterMessages() {
+            currentPage = 1;
+            currentStatus = document.getElementById('statusFilter').value;
+            loadMessages();
+        }
+
+        function toggleStatus(id, currentStatus) {
+            var newStatus = currentStatus === 0 ? 1 : 0;
+            var formData = new URLSearchParams();
+            formData.append('id', id);
+            formData.append('status', newStatus);
+            fetch('/manage/message/updateStatus', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert('成功', '状态更新成功');
+                    loadMessages();
+                } else {
+                    showAlert('失败', data.message);
+                }
+            })
+            .catch(error => { showAlert('错误', '网络错误'); });
+        }
+
+        function aiClassify(id) {
+            fetch('/manage/ai/classify?id=' + id, { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showAlert('分类完成', '该留言已分类为：' + data.data.type);
+                        loadMessages();
+                    } else {
+                        showAlert('失败', data.message);
+                    }
+                })
+                .catch(error => { showAlert('错误', '网络错误'); });
+        }
+
+        function aiGenerateReply(id) {
+            fetch('/manage/ai/generateReply?messageId=' + id, { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        currentReplyMessageId = id;
+                        currentReplyId = null;
+                        fetch('/user/getMessage?id=' + id)
+                            .then(r => r.json())
+                            .then(msgData => {
+                                if (msgData.success) {
+                                    document.getElementById('msgUsername').textContent = msgData.data.username;
+                                    document.getElementById('msgContent').textContent = msgData.data.content;
+                                    document.getElementById('replyContent').value = data.data.content;
+                                    if (msgData.data.reply) {
+                                        currentReplyId = msgData.data.reply.id;
+                                    }
+                                    document.getElementById('replyModal').style.display = 'flex';
+                                }
+                            });
+                    } else {
+                        showAlert('失败', data.message);
+                    }
+                })
+                .catch(error => { showAlert('错误', '网络错误'); });
+        }
+
+        function updatePagination(total) {
+            totalPages = Math.ceil(total / pageSize);
+            if (totalPages === 0) totalPages = 1;
+
+            document.getElementById('pageInfo').textContent = '第 ' + currentPage + ' 页 / 共 ' + totalPages + ' 页';
+            document.getElementById('prevBtn').disabled = currentPage <= 1;
+            document.getElementById('nextBtn').disabled = currentPage >= totalPages;
+        }
+
+        function prevPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                loadMessages();
+            }
+        }
+
+        function nextPage() {
+            if (currentPage < totalPages) {
+                currentPage++;
+                loadMessages();
+            }
+        }
+
+        function toggleSelectAll(checked) {
+            var checkboxes = document.querySelectorAll('#messageTableBody input[type="checkbox"]');
+            checkboxes.forEach(function(cb) { cb.checked = checked; });
+            document.getElementById('selectAllTop').checked = checked;
+            document.getElementById('selectAllHead').checked = checked;
+            updateSelectedIds();
+        }
+
+        function toggleSelect(id) {
+            updateSelectedIds();
+        }
+
+        function updateSelectedIds() {
+            const checkboxes = document.querySelectorAll('#messageTableBody input[type="checkbox"]:checked');
+            selectedIds = Array.from(checkboxes).map(cb => parseInt(cb.value));
+        }
+
+        function openReplyModal(messageId) {
+            currentReplyMessageId = messageId;
+            currentReplyId = null;
+
+            fetch('/user/getMessage?id=' + messageId)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('msgUsername').textContent = data.data.username;
+                        document.getElementById('msgContent').textContent = data.data.content;
+                        if (data.data.reply) {
+                            currentReplyId = data.data.reply.id;
+                            document.getElementById('replyContent').value = data.data.reply.replyContent;
+                        } else {
+                            document.getElementById('replyContent').value = '';
+                        }
+                        document.getElementById('replyModal').style.display = 'flex';
+                    }
+                })
+                .catch(error => {
+                    showAlert('错误', '加载留言信息失败');
+                });
+        }
+
+        function closeReplyModal() {
+            document.getElementById('replyModal').style.display = 'none';
+            currentReplyMessageId = null;
+            currentReplyId = null;
+        }
+
+        function submitReply() {
+            const content = document.getElementById('replyContent').value.trim();
+            if (!content) {
+                showAlert('提示', '请输入回复内容');
+                return;
+            }
+
+            if (currentReplyId) {
+                var formData = new URLSearchParams();
+                formData.append('id', currentReplyId);
+                formData.append('content', content);
+                fetch('/manage/reply/update', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showAlert('成功', '回复更新成功');
+                        closeReplyModal();
+                        loadMessages();
+                    } else {
+                        showAlert('失败', data.message);
+                    }
+                })
+                .catch(error => { showAlert('错误', '网络错误'); });
+            } else {
+                var formData = new URLSearchParams();
+                formData.append('messageId', currentReplyMessageId);
+                formData.append('content', content);
+                fetch('/manage/reply/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showAlert('成功', '回复成功');
+                        closeReplyModal();
+                        loadMessages();
+                    } else {
+                        showAlert('失败', data.message);
+                    }
+                })
+                .catch(error => { showAlert('错误', '网络错误'); });
+            }
+        }
+
+        function deleteMessage(id) {
+            document.getElementById('confirmMessage').textContent = '确定要删除这条留言吗？此操作不可恢复。';
+            document.getElementById('confirmBtn').onclick = function() {
+                performDelete([id]);
+            };
+            document.getElementById('confirmModal').style.display = 'flex';
+        }
+
+        function batchDelete() {
+            updateSelectedIds();
+            if (selectedIds.length === 0) {
+                showAlert('提示', '请选择要删除的留言');
+                return;
+            }
+
+            document.getElementById('confirmMessage').textContent = '确定要删除选中的 ' + selectedIds.length + ' 条留言吗？此操作不可恢复。';
+            document.getElementById('confirmBtn').onclick = function() {
+                performDelete(selectedIds);
+            };
+            document.getElementById('confirmModal').style.display = 'flex';
+        }
+
+        function performDelete(ids) {
+            closeConfirmModal();
+
+            const formData = new URLSearchParams();
+            if (ids.length === 1) {
+                formData.append('id', ids[0]);
+                fetch('/manage/message/delete', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showAlert('成功', '删除成功');
+                        loadMessages();
+                    } else {
+                        showAlert('失败', data.message);
+                    }
+                })
+                .catch(error => {
+                    showAlert('错误', '网络错误');
+                });
+            } else {
+                formData.append('ids', ids.join(','));
+                fetch('/manage/message/deleteBatch', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showAlert('成功', '批量删除成功');
+                        loadMessages();
+                    } else {
+                        showAlert('失败', data.message);
+                    }
+                })
+                .catch(error => {
+                    showAlert('错误', '网络错误');
+                });
+            }
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('confirmModal').style.display = 'none';
+        }
+
+        function showAlert(title, message) {
+            document.getElementById('alertTitle').textContent = title;
+            document.getElementById('alertMessage').textContent = message;
+            document.getElementById('alertModal').style.display = 'flex';
+        }
+
+        function closeAlert() {
+            document.getElementById('alertModal').style.display = 'none';
+        }
+
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

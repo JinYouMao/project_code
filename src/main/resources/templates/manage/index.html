@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理首页 - 在线留言板</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body class="admin-layout">
+    <aside class="admin-sidebar">
+        <div class="sidebar-header">留言板管理</div>
+        <ul class="sidebar-menu">
+            <li><a href="/manage/index" class="active">首页概览</a></li>
+            <li><a href="/manage/message">留言管理</a></li>
+            <li><a href="/manage/statistics">数据统计</a></li>
+            <li><a href="/admin/logout">退出登录</a></li>
+        </ul>
+    </aside>
+
+    <div class="admin-main">
+        <div class="admin-header">
+            <h2 style="font-size:16px;font-weight:600;">管理首页</h2>
+            <span style="color:#8c8c8c;font-size:13px;"
+                  th:text="'当前管理员：' + ${session.admin != null ? session.admin.username : ''}">admin</span>
+        </div>
+
+        <div class="admin-content">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" th:text="${totalCount}">0</div>
+                    <div class="stat-label">留言总数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" th:text="${unhandledCount}" style="color:#faad14;">0</div>
+                    <div class="stat-label">未处理</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" th:text="${repliedCount}" style="color:#52c41a;">0</div>
+                    <div class="stat-label">已回复</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" th:text="${riskCount}" style="color:#ff4d4f;">0</div>
+                    <div class="stat-label">违规留言</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">快捷操作</div>
+                <div class="toolbar">
+                    <a href="/manage/message" class="btn btn-primary">查看留言列表</a>
+                    <a href="/manage/statistics" class="btn btn-success">查看数据统计</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">系统信息</div>
+                <table class="table">
+                    <tr>
+                        <th style="width:180px;">项目名称</th>
+                        <td>在线留言板管理系统</td>
+                    </tr>
+                    <tr>
+                        <th>技术架构</th>
+                        <td>Spring Boot + MyBatis + Thymeleaf</td>
+                    </tr>
+                    <tr>
+                        <th>JDK 版本</th>
+                        <td>17</td>
+                    </tr>
+                    <tr>
+                        <th>数据库</th>
+                        <td>MySQL 8.0</td>
+                    </tr>
+                    <tr>
+                        <th>AI 功能</th>
+                        <td>通义千问 qwen-turbo</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script th:src="@{/js/manage.js}"></script>
+</body>
+</html>

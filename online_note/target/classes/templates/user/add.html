@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>提交留言 - 在线留言板</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .navbar-glass {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.92), rgba(139, 92, 246, 0.92));
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 4px 30px rgba(99, 102, 241, 0.25);
+        }
+        .navbar-glass .nav-link {
+            color: rgba(255, 255, 255, 0.75);
+            transition: all 0.3s ease;
+            position: relative;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+        }
+        .navbar-glass .nav-link:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.15);
+        }
+        .navbar-glass .nav-link.active {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.2);
+            font-weight: 600;
+        }
+        .navbar-glass .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 3px;
+            background: #fff;
+            border-radius: 2px;
+        }
+        .logo-text {
+            color: #fff;
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .page-header h2 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin: 0;
+        }
+        .page-header .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.55rem 1.25rem;
+            border-radius: 10px;
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .page-header .btn-back:hover {
+            background: #e2e8f0;
+            transform: translateY(-1px);
+        }
+        .form-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 20px rgba(0,0,0,0.04);
+            border: 1px solid #f1f5f9;
+        }
+        .ai-section {
+            position: relative;
+            background: linear-gradient(135deg, #f0f4ff, #ede9fe);
+            border-radius: 14px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid transparent;
+            background-clip: padding-box;
+        }
+        .ai-section::before {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            border-radius: 15px;
+            padding: 1.5px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6, #a78bfa);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+        }
+        .ai-section-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: #4338ca;
+            margin: 0 0 1rem 0;
+        }
+        .ai-section-title .ai-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: #fff;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 0.15rem 0.5rem;
+            border-radius: 6px;
+            letter-spacing: 0.5px;
+        }
+        .ai-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+        }
+        .btn-ai-modern {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.5rem 1rem;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            background: #fff;
+            color: #4f46e5;
+            transition: all 0.3s ease;
+        }
+        .btn-ai-modern:hover {
+            background: #6366f1;
+            color: #fff;
+            border-color: #6366f1;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+        .btn-ai-modern.btn-polish {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: #fff;
+            border-color: transparent;
+        }
+        .btn-ai-modern.btn-polish:hover {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+        }
+        .btn-ai-modern.btn-risk {
+            background: linear-gradient(135deg, #f87171, #ef4444);
+            color: #fff;
+            border-color: transparent;
+        }
+        .btn-ai-modern.btn-risk:hover {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+        }
+        .form-group-modern {
+            margin-bottom: 1.5rem;
+        }
+        .form-group-modern label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 0.5rem;
+        }
+        .form-group-modern label .optional {
+            color: #94a3b8;
+            font-weight: 400;
+            font-size: 0.8rem;
+        }
+        .form-group-modern label .required {
+            color: #ef4444;
+        }
+        .form-group-modern input,
+        .form-group-modern textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            color: #1e293b;
+            background: #f8fafc;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+            outline: none;
+        }
+        .form-group-modern input:focus,
+        .form-group-modern textarea:focus {
+            border-color: #6366f1;
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+        }
+        .form-group-modern textarea {
+            resize: vertical;
+            min-height: 180px;
+            line-height: 1.6;
+        }
+        .char-count-modern {
+            text-align: right;
+            margin-top: 0.4rem;
+            font-size: 0.8rem;
+            color: #94a3b8;
+        }
+        .form-actions-modern {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #f1f5f9;
+        }
+        .form-actions-modern .btn-reset {
+            padding: 0.65rem 1.5rem;
+            border-radius: 10px;
+            background: #f1f5f9;
+            color: #64748b;
+            border: 1px solid #e2e8f0;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .form-actions-modern .btn-reset:hover {
+            background: #e2e8f0;
+        }
+        .form-actions-modern .btn-submit {
+            padding: 0.65rem 2rem;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: #fff;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .form-actions-modern .btn-submit:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+        }
+        .modal-overlay {
+            backdrop-filter: blur(4px);
+        }
+        .modal-card {
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            border: none;
+            overflow: hidden;
+        }
+        .modal-card .modal-header {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: #fff;
+            padding: 1.25rem 1.5rem;
+        }
+        .modal-card .modal-header h3 {
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        .modal-card .modal-body {
+            padding: 1.5rem;
+        }
+        .modal-card .modal-body p {
+            color: #475569;
+            line-height: 1.6;
+        }
+        .modal-card .modal-footer {
+            padding: 1rem 1.5rem;
+            background: #f8fafc;
+            border-top: 1px solid #f1f5f9;
+        }
+        .modal-card .modal-footer .btn {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: #fff;
+            border: none;
+            padding: 0.55rem 1.5rem;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .modal-card .modal-footer .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+        .footer-modern {
+            text-align: center;
+            padding: 2rem 1rem;
+            color: #94a3b8;
+            font-size: 0.85rem;
+            border-top: 1px solid #f1f5f9;
+            margin-top: 3rem;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeInUp 0.5s ease-out forwards;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header navbar-glass">
+            <div class="header-content">
+                <h1 class="logo logo-text">📝 在线留言板</h1>
+                <nav class="nav">
+                    <a href="/user/index" class="nav-link">留言列表</a>
+                    <a href="/user/add" class="nav-link active">提交留言</a>
+                    <a href="/admin/login" class="nav-link">管理后台</a>
+                </nav>
+            </div>
+        </header>
+
+        <main class="main-content animate-fade-in">
+            <div class="page-header">
+                <h2>提交留言</h2>
+                <button class="btn-back" onclick="location.href='/user/index'">
+                    ← 返回列表
+                </button>
+            </div>
+
+            <div class="form-container form-card">
+                <form id="messageForm" class="message-form">
+                    <div class="ai-assistant ai-section">
+                        <h4 class="ai-section-title">
+                            🤖 AI智能助手
+                            <span class="ai-badge">AI</span>
+                        </h4>
+                        <div class="ai-buttons">
+                            <button type="button" class="btn-ai-modern" onclick="insertTemplate('consult')">
+                                📋 咨询模板
+                            </button>
+                            <button type="button" class="btn-ai-modern" onclick="insertTemplate('suggest')">
+                                💡 建议模板
+                            </button>
+                            <button type="button" class="btn-ai-modern" onclick="insertTemplate('thanks')">
+                                🙏 感谢模板
+                            </button>
+                            <button type="button" class="btn-ai-modern btn-polish" onclick="polishContent()">
+                                ✨ AI润色
+                            </button>
+                            <button type="button" class="btn-ai-modern btn-risk" onclick="checkRisk()">
+                                🔍 AI检测
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group form-group-modern">
+                        <label for="username">留言人姓名 <span class="optional">(选填，默认匿名)</span></label>
+                        <input type="text" id="username" name="username"
+                               placeholder="请输入您的姓名" maxlength="50">
+                    </div>
+
+                    <div class="form-group form-group-modern">
+                        <label for="contact">联系方式 <span class="optional">(选填)</span></label>
+                        <input type="text" id="contact" name="contact"
+                               placeholder="请输入您的手机号或邮箱" maxlength="50">
+                    </div>
+
+                    <div class="form-group form-group-modern">
+                        <label for="content">留言内容 <span class="required">*</span></label>
+                        <textarea id="content" name="content" rows="8"
+                                  placeholder="请输入您的留言内容（必填，最多2000字）"
+                                  required></textarea>
+                        <div class="char-count char-count-modern">
+                            <span id="charCount">0</span> / 2000
+                        </div>
+                    </div>
+
+                    <div class="form-actions form-actions-modern">
+                        <button type="button" class="btn-reset" onclick="resetForm()">
+                            重置
+                        </button>
+                        <button type="submit" class="btn-submit">
+                            提交留言
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </main>
+
+        <footer class="footer footer-modern">
+            <p>&copy; 2024 在线留言板管理系统 - 计算机专业课程设计</p>
+        </footer>
+    </div>
+
+    <div id="alertModal" class="modal modal-overlay">
+        <div class="modal-content modal-card">
+            <div class="modal-header">
+                <h3 id="alertTitle">提示</h3>
+            </div>
+            <div class="modal-body">
+                <p id="alertMessage"></p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="closeAlert()">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/user.js"></script>
+    <script>
+        document.getElementById('content').addEventListener('input', function() {
+            document.getElementById('charCount').textContent = this.value.length;
+            riskDetected = false;
+        });
+
+        document.getElementById('messageForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            submitMessage();
+        });
+
+        function insertTemplate(type) {
+            fetch('/user/template?type=' + type)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('content').value = data.data.template;
+                        document.getElementById('charCount').textContent = data.data.template.length;
+                        showAlert('模板已填充', '已自动填充' + getTemplateName(type) + '，您可以修改后再提交');
+                    } else {
+                        showAlert('获取失败', data.message);
+                    }
+                })
+                .catch(error => {
+                    showAlert('错误', '网络错误，请稍后重试');
+                });
+        }
+
+        function getTemplateName(type) {
+            const names = {
+                'consult': '咨询类',
+                'suggest': '建议类',
+                'thanks': '感谢类'
+            };
+            return names[type] || '未知';
+        }
+
+        function polishContent() {
+            const content = document.getElementById('content').value.trim();
+            if (!content) {
+                showAlert('提示', '请先输入要润色的内容');
+                return;
+            }
+
+            fetch('/user/polish', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'content=' + encodeURIComponent(content)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('content').value = data.data.content;
+                    document.getElementById('charCount').textContent = data.data.content.length;
+                    showAlert('润色完成', '内容已优化，您可以直接使用或继续修改');
+                } else {
+                    showAlert('润色失败', data.message);
+                }
+            })
+            .catch(error => {
+                showAlert('错误', '网络错误，请稍后重试');
+            });
+        }
+
+        var riskDetected = false;
+        function checkRisk() {
+            const content = document.getElementById('content').value.trim();
+            if (!content) {
+                showAlert('提示', '请先输入要检测的内容');
+                return;
+            }
+
+            fetch('/user/checkRisk', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'content=' + encodeURIComponent(content)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    if (data.data.isRisk) {
+                        riskDetected = true;
+                        showAlert('⚠️ 检测到违规内容', data.data.message + '，请修改后再提交！违规内容将无法提交。');
+                    } else {
+                        riskDetected = false;
+                        showAlert('✅ 检测通过', data.data.message);
+                    }
+                } else {
+                    showAlert('检测失败', data.message);
+                }
+            })
+            .catch(error => {
+                showAlert('错误', '网络错误，请稍后重试');
+            });
+        }
+
+        function submitMessage() {
+            const username = document.getElementById('username').value.trim();
+            const content = document.getElementById('content').value.trim();
+            const contact = document.getElementById('contact').value.trim();
+
+            if (!content) {
+                showAlert('错误', '留言内容不能为空');
+                return;
+            }
+
+            if (content.length > 2000) {
+                showAlert('错误', '留言内容不能超过2000字');
+                return;
+            }
+
+            if (riskDetected) {
+                showAlert('⚠️ 提交被阻止', '检测到违规内容，请修改后重新检测再提交！');
+                return;
+            }
+
+            const formData = new URLSearchParams();
+            formData.append('username', username);
+            formData.append('content', content);
+            formData.append('contact', contact);
+
+            fetch('/user/submit', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert('成功', '留言提交成功！');
+                    setTimeout(function() {
+                        location.href = '/user/index';
+                    }, 1500);
+                } else {
+                    showAlert('失败', data.message);
+                }
+            })
+            .catch(error => {
+                showAlert('错误', '网络错误，请稍后重试');
+            });
+        }
+
+        function resetForm() {
+            document.getElementById('messageForm').reset();
+            document.getElementById('charCount').textContent = '0';
+        }
+
+        function showAlert(title, message) {
+            document.getElementById('alertTitle').textContent = title;
+            document.getElementById('alertMessage').textContent = message;
+            document.getElementById('alertModal').style.display = 'flex';
+        }
+
+        function closeAlert() {
+            document.getElementById('alertModal').style.display = 'none';
+        }
+
+        document.getElementById('alertModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeAlert();
+            }
+        });
+    </script>
+</body>
+</html>
